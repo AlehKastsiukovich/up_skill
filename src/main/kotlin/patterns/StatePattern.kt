@@ -1,35 +1,39 @@
 package patterns
 
-interface UserState {
-    fun signUp(user: User, email: String)
-    fun verifyEmail(user: User, token: String)
+enum class UserState(
+    val signUp: (user: User, email: String) -> Unit,
+    val verifyEmail: (user: User, token: String) -> Unit
+) {
+    ANONYMOUS(
+        signUp = { user, email ->
+            println("Signing up with email: $email")
+            user.email = email
+            user.state = UNVERIFIED
+        },
+        verifyEmail = { user, token ->
+            println("You myst sign up before verifying your email.")
+        }
+    ),
+    UNVERIFIED(
+        signUp = { user, email ->
+            println("You are already signed up")
+        },
+        verifyEmail = { user, token ->
+            println("Verify email with token: $token")
+            user.state = AUTHENTICATED
+        }
+    ),
+    AUTHENTICATED(
+        signUp = { user, email ->
+            println("You are already signed up")
+        },
+        verifyEmail = { user, token ->
+            println("You are already verified ")
+        }
+    )
 }
 
-object Anonymous : UserState {
-    override fun signUp(user: User, email: String) {
-        println("Signing up with email: $email")
-        user.email = email
-        user.state = Unverified
-    }
-
-    override fun verifyEmail(user: User, token: String) = println("You myst sign up before verifying your email.")
-
-}
-object Unverified: UserState {
-    override fun signUp(user: User, email: String) = println("You are already signed up")
-
-    override fun verifyEmail(user: User, token: String) {
-        println("Verify email with token: $token")
-        user.state = Authenticated
-    }
-}
-
-object Authenticated : UserState {
-    override fun signUp(user: User, email: String) = println("You are already signed up")
-    override fun verifyEmail(user: User, token: String) = println("You are already verified ")
-}
-
-class User(var email: String? = null, var state: UserState = Anonymous) {
+class User(var email: String? = null, var state: UserState = UserState.ANONYMOUS) {
     fun signUp(email: String) = state.signUp(this, email)
     fun verifyEmail(token: String) = state.verifyEmail(this, token)
 }
