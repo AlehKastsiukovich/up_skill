@@ -1,9 +1,5 @@
 package patterns
 
-/**
- * Base problem: When you add a new state, all the functions will be broken.
- */
-
 interface UserState {
     fun signUp(user: User, email: String)
     fun verifyEmail(user: User, token: String)
