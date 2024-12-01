@@ -4,36 +4,37 @@ package patterns
  * Base problem: When you add a new state, all the functions will be broken.
  */
 
-enum class UserState {
-    ANONYMOUS,
-    UNVERIFIED,
-    AUTHENTICATED
+interface UserState {
+    fun signUp(user: User, email: String)
+    fun verifyEmail(user: User, token: String)
 }
 
-class User(var email: String? = null, var state: UserState = UserState.ANONYMOUS) {
-    fun signUp(email: String) {
-        when(state) {
-            UserState.ANONYMOUS -> {
-                println("Signing up with email: $email")
-                this.email = email
-                state = UserState.UNVERIFIED
-            }
-            UserState.UNVERIFIED -> println("You are already signed up")
-            UserState.AUTHENTICATED -> println("You are already signed up and authenticated")
-        }
+object Anonymous : UserState {
+    override fun signUp(user: User, email: String) {
+        println("Signing up with email: $email")
+        user.email = email
+        user.state = Unverified
     }
 
-    fun verifyEmail(token: String) {
-        when(state) {
-            UserState.ANONYMOUS -> {
-                println("You myst sign up before verifying your email.")
-            }
-            UserState.UNVERIFIED -> {
-                println("Verify email with token: $token")
-                state = UserState.AUTHENTICATED
-            }
-            UserState.AUTHENTICATED -> println("You are already verified ")
-        }
+    override fun verifyEmail(user: User, token: String) = println("You myst sign up before verifying your email.")
+
+}
+object Unverified: UserState {
+    override fun signUp(user: User, email: String) = println("You are already signed up")
+
+    override fun verifyEmail(user: User, token: String) {
+        println("Verify email with token: $token")
+        user.state = Authenticated
     }
+}
+
+object Authenticated : UserState {
+    override fun signUp(user: User, email: String) = println("You are already signed up")
+    override fun verifyEmail(user: User, token: String) = println("You are already verified ")
+}
+
+class User(var email: String? = null, var state: UserState = Anonymous) {
+    fun signUp(email: String) = state.signUp(this, email)
+    fun verifyEmail(token: String) = state.verifyEmail(this, token)
 }
 
